@@ -3,11 +3,14 @@ import { useWriteContract, useAccount } from "wagmi";
 import { parseEther } from "viem";
 import { useState } from "react";
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
 
 const ABI = [
   {
-    "inputs": [{ "internalType": "address", "name": "seller", "type": "address" }],
+    "inputs": [
+      { "internalType": "address", "name": "seller", "type": "address" },
+      { "internalType": "bool", "name": "isEscrow", "type": "bool" }
+    ],
     "name": "pay",
     "outputs": [],
     "stateMutability": "payable",
@@ -28,7 +31,7 @@ export default function PayButton({ seller, amount }: { seller: string; amount: 
         address: CONTRACT_ADDRESS,
         abi: ABI,
         functionName: "pay",
-        args: [seller],
+        args: [seller, true],
         value: parseEther(amount),
       });
       alert("✅ Pagamento criado! Dinheiro está no cofre.");

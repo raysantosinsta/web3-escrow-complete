@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { AuthProvider } from "./components/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,15 +20,24 @@ export const metadata: Metadata = {
   description: "Sistema de pagamento em escrow na blockchain Polygon",
 };
 
+import Sidebar from "./components/Sidebar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-zinc-50">
-        <Providers>{children}</Providers>
+    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+      <body className="min-h-screen bg-slate-950 flex">
+        <AuthProvider>
+          <Providers>
+            <Sidebar />
+            <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden">
+              {children}
+            </main>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

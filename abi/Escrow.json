@@ -5,6 +5,37 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "InstantPaymentReleased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "id",
           "type": "uint256"
@@ -74,6 +105,11 @@
           "internalType": "address",
           "name": "seller",
           "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "isEscrow",
+          "type": "bool"
         }
       ],
       "name": "pay",

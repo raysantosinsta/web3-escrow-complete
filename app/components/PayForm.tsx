@@ -3,10 +3,19 @@ import { useWriteContract, useAccount } from "wagmi";
 import { parseEther } from "viem";
 import { useState } from "react";
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
 
 const ABI = [
-  { "inputs": [{ "internalType": "address", "name": "seller", "type": "address" }], "name": "pay", "outputs": [], "stateMutability": "payable", "type": "function" }
+  { 
+    "inputs": [
+      { "internalType": "address", "name": "seller", "type": "address" },
+      { "internalType": "bool", "name": "isEscrow", "type": "bool" }
+    ], 
+    "name": "pay", 
+    "outputs": [], 
+    "stateMutability": "payable", 
+    "type": "function" 
+  }
 ];
 
 export default function PayForm() {
@@ -27,7 +36,7 @@ export default function PayForm() {
         address: CONTRACT_ADDRESS,
         abi: ABI,
         functionName: "pay",
-        args: [seller as `0x${string}`],
+        args: [seller as `0x${string}`, true],
         value: parseEther(amount),
       });
       alert("✅ Pagamento criado! Dinheiro está no cofre.");
@@ -59,7 +68,7 @@ export default function PayForm() {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           className="w-full border rounded-2xl px-4 py-3"
-          placeholder="0.05"
+          placeholder="0.01"
         />
       </div>
 
