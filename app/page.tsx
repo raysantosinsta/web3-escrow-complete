@@ -5,26 +5,14 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagm
 import { parseEther } from "viem";
 import { Send, Loader2, CheckCircle, AlertCircle, ArrowLeft, Star, Briefcase } from "lucide-react";
 import escrowAbi from "../abi/Escrow.json";
-
-import ConnectWallet from "./components/ConnectWallet";
 import { NetworkChecker } from "./components/NetworkChecker";
-import { ShieldCheck } from "lucide-react";
 import { useAuth } from "./components/AuthContext";
+import ConnectWallet from "./components/ConnectWallet";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`;
 
 const FREELANCERS = [
-  {
-    id: 1,
-    name: "Alice Lima",
-    role: "Senior UI/UX Designer",
-    description: "Sistemas Web3 de alta conversão.",
-    rate: "0.05", // Suggested hourly rate in BRL or MATIC equivalent
-    rating: 4.9,
-    jobs: 124,
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-    wallet: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
-  },
+
   {
     id: 2,
     name: "Roberto Silva",
@@ -35,18 +23,8 @@ const FREELANCERS = [
     jobs: 89,
     avatar: "https://i.pravatar.cc/150?u=a04258a2462d826712d",
     wallet: "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
-  },
-  {
-    id: 3,
-    name: "Charlie R.",
-    role: "Fullstack Next.js",
-    description: "Interfaces rápidas e responsivas.",
-    rate: "0.03",
-    rating: 4.7,
-    jobs: 45,
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-    wallet: "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
   }
+
 ];
 
 export default function Home() {
@@ -54,7 +32,7 @@ export default function Home() {
   const { address } = useAccount();
   const { user } = useAuth();
   const [selectedFreelancer, setSelectedFreelancer] = useState<typeof FREELANCERS[0] | null>(null);
-  
+
   const [amount, setAmount] = useState("");
   const [isEscrow, setIsEscrow] = useState(true);
   const [error, setError] = useState("");
@@ -138,7 +116,7 @@ export default function Home() {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.message || "Erro ao criar checkout");
 
       // 2. Redireciona para a página de checkout daquele sessionId
@@ -151,37 +129,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-indigo-500/30 pb-12">
-      {/* Header */}
-      <header className="bg-slate-950/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedFreelancer(null)}>
-            <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="font-bold tracking-tight text-xl text-white">
-              Dev<span className="text-indigo-500">Trust</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 font-bold rounded-2xl hover:bg-indigo-600 hover:text-white transition-all text-sm shadow-lg shadow-indigo-600/10"
-            >
-              <Briefcase className="w-4 h-4" />
-              Meus Projetos
-            </button>
-            <div className="hidden lg:flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Ativos agora</span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-indigo-500/30">
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-16">
-        
+
         {/* VIEW A: Marketplace Grid */}
         {!selectedFreelancer && (
           <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -192,12 +144,12 @@ export default function Home() {
               </h2>
               <p className="text-slate-400 font-medium text-lg max-w-2xl">Acesso direto aos especialistas em blockchain com a segurança máxima de contratos inteligentes em escrow.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {FREELANCERS.map((dev) => (
                 <div key={dev.id} className="group relative bg-[#111827]/40 backdrop-blur-xl rounded-[32px] border border-white/5 hover:border-indigo-500/50 transition-all duration-500 flex flex-col overflow-hidden shadow-2xl hover:shadow-indigo-500/10">
                   <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  
+
                   {/* Card Header with gradient */}
                   <div className="h-24 bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-slate-900/40 p-6 relative">
                     <div className="flex justify-between items-start relative z-10">
@@ -208,30 +160,23 @@ export default function Home() {
                       <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">{dev.jobs} jobs</span>
                     </div>
                   </div>
-                  
+
                   <div className="px-6 -mt-10 mb-5 relative z-10">
                     <div className="relative inline-block">
-                        <img src={dev.avatar} alt={dev.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-slate-950 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-[3px] border-slate-950" />
+                      <img src={dev.avatar} alt={dev.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-slate-950 shadow-2xl group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-[3px] border-slate-950" />
                     </div>
                   </div>
-                  
+
                   <div className="px-8 pb-8 flex flex-col flex-grow relative z-10">
                     <h3 className="font-black text-xl text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tighter">{dev.name}</h3>
                     <div className="flex items-center text-indigo-400 text-[11px] font-black uppercase tracking-widest mt-1 mb-4">
                       <Briefcase className="w-3.5 h-3.5 mr-2" />
                       {dev.role}
                     </div>
-                    
+
                     <p className="text-sm text-slate-400 font-medium line-clamp-2 mb-6 flex-grow leading-relaxed">{dev.description}</p>
 
-                    <div className="flex items-center justify-between mb-8 py-5 border-y border-white/5">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Rate</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-black text-white text-2xl tracking-tighter">{parseFloat(dev.rate).toFixed(0)}</span>
-                        <span className="text-[10px] text-indigo-500 font-black uppercase tracking-widest">MATIC</span>
-                      </div>
-                    </div>
 
                     <div className="flex gap-3">
                       <button
@@ -257,13 +202,13 @@ export default function Home() {
         {/* VIEW B: Checkout Form */}
         {selectedFreelancer && (
           <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <button 
+            <button
               onClick={() => setSelectedFreelancer(null)}
               className="flex items-center text-sm font-semibold text-slate-500 hover:text-slate-800 mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-1" /> Voltar aos profissionais
             </button>
-            
+
             {/* Freelancer Profile Badge */}
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex items-center gap-4">
               <img src={selectedFreelancer.avatar} alt="Avatar" className="w-16 h-16 rounded-full ring-4 ring-slate-50" />
@@ -271,27 +216,27 @@ export default function Home() {
                 <h3 className="font-bold text-lg text-slate-800">{selectedFreelancer.name}</h3>
                 <p className="text-slate-500 font-medium text-sm truncate">{selectedFreelancer.role}</p>
                 <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs bg-slate-100 text-slate-500 font-mono px-2 py-0.5 rounded-md truncate max-w-[200px]">
-                      {selectedFreelancer.wallet}
-                    </span>
+                  <span className="text-xs bg-slate-100 text-slate-500 font-mono px-2 py-0.5 rounded-md truncate max-w-[200px]">
+                    {selectedFreelancer.wallet}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Payment Tabs */}
             <div className="flex bg-slate-200/50 p-1 rounded-xl mb-6">
-                <button 
-                  onClick={() => setPaymentMethod('crypto')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${paymentMethod === 'crypto' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Com Carteira (Web3)
-                </button>
-                <button 
-                  onClick={() => setPaymentMethod('pix')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${paymentMethod === 'pix' ? 'bg-white shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Via Pix (Sem Conta)
-                </button>
+              <button
+                onClick={() => setPaymentMethod('crypto')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${paymentMethod === 'crypto' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Com Carteira (Web3)
+              </button>
+              <button
+                onClick={() => setPaymentMethod('pix')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${paymentMethod === 'pix' ? 'bg-white shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Via Pix (Sem Conta)
+              </button>
             </div>
 
             {/* Network & Wallet Controls only if Crypto */}
@@ -308,7 +253,7 @@ export default function Home() {
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl shadow-slate-200/40">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">
-                    {paymentMethod === 'crypto' ? 'Configurar Pagamento' : 'Checkout Rápido BRL'}
+                  {paymentMethod === 'crypto' ? 'Configurar Pagamento' : 'Checkout Rápido BRL'}
                 </h2>
               </div>
 
@@ -329,7 +274,7 @@ export default function Home() {
                     />
                     <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                       <span className="text-slate-400 font-medium text-lg">
-                          {paymentMethod === 'crypto' ? 'MATIC' : 'R$'}
+                        {paymentMethod === 'crypto' ? 'MATIC' : 'R$'}
                       </span>
                     </div>
                   </div>
@@ -340,7 +285,7 @@ export default function Home() {
                   <div>
                     <p className="text-sm font-bold text-slate-800">Reter Pagamento (Aconselhado)</p>
                     <p className="text-xs text-slate-500 mt-0.5 max-w-[250px] leading-relaxed">
-                        O contrato prende os fundos e você decide quando deve liberar o pagamento para o Freelancer.
+                      O contrato prende os fundos e você decide quando deve liberar o pagamento para o Freelancer.
                     </p>
                   </div>
                   <button

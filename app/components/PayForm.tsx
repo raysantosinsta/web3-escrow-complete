@@ -2,8 +2,10 @@
 import { useWriteContract, useAccount } from "wagmi";
 import { parseEther } from "viem";
 import { useState } from "react";
+import { ESCROW_ADDRESS } from "../constants/contracts";
 
-const CONTRACT_ADDRESS = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
+const CONTRACT_ADDRESS = ESCROW_ADDRESS;
+
 
 const ABI = [
   { 

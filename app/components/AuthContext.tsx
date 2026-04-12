@@ -7,6 +7,7 @@ export const CLIENT_WALLET    = "0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199";
 export const FREELANCER_WALLET = "0xdd2fd4581271e230360230f9337d5c0430bf44c0";
 
 type AppUser = {
+  id:     string;
   wallet: string;
   name:   string;
   role:   "client" | "freelancer";
@@ -15,12 +16,14 @@ type AppUser = {
 
 const USERS: AppUser[] = [
   {
+    id:     "user-client-1",
     wallet: CLIENT_WALLET,
     name:   "Empresa XPTO",
     role:   "client",
     avatar: "https://i.pravatar.cc/150?u=client-xpto",
   },
   {
+    id:     "user-freelancer-1",
     wallet: FREELANCER_WALLET,
     name:   "Roberto Dev",
     role:   "freelancer",

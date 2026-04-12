@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuthProvider } from "./components/AuthContext";
+import Header from "./components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,11 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Web3 Escrow Pay",
-  description: "Sistema de pagamento em escrow na blockchain Polygon",
+  title: "PayWeb3 - Gateway & Escrow",
+  description: "Sistema de pagamento e escrow na blockchain Polygon",
 };
-
-import Sidebar from "./components/Sidebar";
 
 export default function RootLayout({
   children,
@@ -29,11 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} dark`}>
-      <body className="min-h-screen bg-slate-950 flex">
+      <body className="min-h-screen bg-slate-950 flex flex-col">
         <AuthProvider>
           <Providers>
-            <Sidebar />
-            <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden">
+            <Header />
+            <main className="flex-1 w-full overflow-y-auto">
               {children}
             </main>
           </Providers>

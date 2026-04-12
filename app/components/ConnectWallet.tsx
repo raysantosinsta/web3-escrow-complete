@@ -2,15 +2,25 @@
 "use client";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected, metaMask, walletConnect } from "wagmi/connectors";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ConnectWallet() {
   const { address, isConnected } = useAccount();
   const { connect, connectors, error, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const [showOptions, setShowOptions] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Solução para Hydration Mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   if (isConnected && address) {
+
+
     return (
       <div className="flex items-center justify-between gap-4">
         <div className="px-4 py-2 bg-green-100 text-green-700 rounded-2xl text-sm font-medium truncate">

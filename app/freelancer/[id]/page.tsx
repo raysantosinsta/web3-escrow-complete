@@ -7,33 +7,9 @@ import {
   Loader2
 } from "lucide-react";
 import { useAuth } from "../../components/AuthContext";
-import { useWriteContract, useAccount } from "wagmi";
-import { parseEther } from "viem";
-import { ESCROW_ADDRESS, ESCROW_ABI } from "../../constants/contracts";
+import { useAccount } from "wagmi";
 
 const FREELANCERS = [
-  {
-    id: 1,
-    name: "Alice Lima",
-    role: "Senior UI/UX Designer",
-    description: "Sistemas Web3 de alta conversão.",
-    rate: "0.05",
-    rating: 4.9,
-    reviews: 124,
-    jobs: 124,
-    responseTime: "2h",
-    successRate: 98,
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-    wallet: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
-    skills: ["Figma", "React", "Web3 UI", "Design System", "Tailwind CSS", "Next.js"],
-    languages: ["Português", "English"],
-    bio: "Designer Web3 com 5 anos de experiência criando produtos digitais que conectam usuários ao universo blockchain. Acredito que ótimas interfaces são o bridge entre tecnologia complexa e usuário final.",
-    portfolio: [
-      { title: "DeFi Dashboard", description: "Interface para protocolo de lending", tech: "React + Wagmi" },
-      { title: "NFT Marketplace", description: "Marketplace com auctions em tempo real", tech: "Next.js + IPFS" },
-      { title: "DAO Governance", description: "Sistema de votação on-chain", tech: "Solidity + React" },
-    ]
-  },
   {
     id: 2,
     name: "Roberto Silva",
@@ -55,28 +31,6 @@ const FREELANCERS = [
       { title: "Yield Aggregator", description: "Agregador de rendimentos multi-chain", tech: "Solidity + Viem" },
       { title: "Token Vesting", description: "Sistema de vesting com cliff e clawback", tech: "Solidity + Foundry" },
     ]
-  },
-  {
-    id: 3,
-    name: "Charlie R.",
-    role: "Fullstack Next.js",
-    description: "Interfaces rápidas e responsivas.",
-    rate: "0.03",
-    rating: 4.7,
-    reviews: 45,
-    jobs: 45,
-    responseTime: "3h",
-    successRate: 95,
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-    wallet: "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
-    skills: ["Next.js", "NestJS", "TypeScript", "Prisma", "PostgreSQL", "Wagmi", "Viem"],
-    languages: ["Português", "English"],
-    bio: "Fullstack developer apaixonado por Web3. Construo aplicações completas do backend ao frontend, com foco em performance, UX e integração blockchain.",
-    portfolio: [
-      { title: "Freelance Marketplace", description: "Plataforma de contratação com escrow Web3", tech: "Next.js + NestJS" },
-      { title: "Analytics Dashboard", description: "Dashboard analítico on-chain em tempo real", tech: "Next.js + The Graph" },
-      { title: "Token Launchpad", description: "Plataforma de lançamento de tokens", tech: "Next.js + Hardhat" },
-    ]
   }
 ];
 
@@ -85,8 +39,7 @@ export default function FreelancerProfile() {
   const params = useParams();
   const { user } = useAuth();
   const { isConnected } = useAccount();
-  const { writeContractAsync } = useWriteContract();
-  
+
   const [hiring, setHiring] = useState(false);
   const [conversing, setConversing] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -116,7 +69,7 @@ export default function FreelancerProfile() {
 
   if (!freelancer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-indigo-950">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="text-center text-white">
           <h2 className="text-2xl font-bold mb-4">Freelancer não encontrado</h2>
           <button onClick={() => router.push('/')} className="px-6 py-3 bg-indigo-600 rounded-xl hover:bg-indigo-700 transition">
@@ -127,74 +80,29 @@ export default function FreelancerProfile() {
     );
   }
 
-  const handleHire = async () => {
-    if (!isConnected) return alert("Por favor, conecte sua carteira primeiro (MetaMask).");
-    
-    setHiring(true);
+  const handleStartProject = async () => {
+    setConversing(true);
     try {
-      // 1. Blockchain Transaction
-      console.log("🚀 Iniciando transação de pagamento...");
-      const tx = await writeContractAsync({
-        address: ESCROW_ADDRESS,
-        abi: ESCROW_ABI,
-        functionName: "pay",
-        args: [freelancer.wallet as `0x${string}`, true],
-        value: parseEther(freelancer.rate),
-      });
-
-      console.log("✅ Transação enviada:", tx);
-
-      // 2. Create Job in Backend
       const res = await fetch("http://localhost:3001/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: `Projeto de ${freelancer.role}`,
-          price: parseFloat(freelancer.rate),
           clientWallet: user.wallet,
           freelancerWallet: freelancer.wallet,
+          title: `Projeto com ${freelancer.name}`,
+          price: parseFloat(freelancer.rate)
         }),
       });
-      
-      if (!res.ok) throw new Error("Erro ao criar job no banco de dados");
+
+      if (!res.ok) throw new Error("Erro ao iniciar projeto");
       const job = await res.json();
-      
-      alert("Pagamento enviado com sucesso! O valor está travado no Escrow.");
       
       if (job?.id) {
         router.push(`/job/${job.id}`);
       }
-    } catch (error: any) {
-      console.error("Erro ao contratar:", error);
-      alert(error.message || "Erro ao processar pagamento on-chain.");
-    } finally {
-      setHiring(false);
-    }
-  };
-
-  const handleStartChat = async () => {
-    if (conversationId) {
-      router.push(`/inbox?c=${conversationId}`);
-      return;
-    }
-
-    setConversing(true);
-    try {
-      const res = await fetch("http://localhost:3001/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientWallet: user.wallet,
-          freelancerWallet: freelancer.wallet,
-        }),
-      });
-      if (!res.ok) throw new Error("Erro ao criar conversa");
-      const conv = await res.json();
-      if (conv?.id) {
-        router.push(`/inbox?c=${conv.id}`);
-      }
     } catch (error) {
-      console.error("Erro ao iniciar conversa:", error);
+      console.error("Erro ao iniciar projeto:", error);
+      alert("Erro ao iniciar projeto. Verifique se o backend está online.");
     } finally {
       setConversing(false);
     }
@@ -203,30 +111,7 @@ export default function FreelancerProfile() {
   const isOwnProfile = user.wallet.toLowerCase() === freelancer.wallet.toLowerCase();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/')}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <span className="text-white/60 text-sm">Marketplace → {freelancer.name}</span>
-          </div>
-
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-semibold rounded-xl hover:bg-indigo-600/40 hover:text-white transition-all text-sm"
-          >
-            <Briefcase className="w-4 h-4" />
-            Meus Projetos
-          </button>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-transparent">
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Profile Card */}
@@ -282,39 +167,20 @@ export default function FreelancerProfile() {
                 </div>
               </div>
 
-              {/* Rate */}
-              <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 rounded-2xl p-4 mb-4">
-                <p className="text-slate-400 text-sm mb-1">Taxa por projeto</p>
-                <p className="text-3xl font-bold text-white">{parseFloat(freelancer.rate).toFixed(0)} <span className="text-lg text-indigo-400">MATIC</span></p>
-              </div>
-
               {/* CTA Buttons */}
               {!isOwnProfile && user.role === 'client' && (
                 <div className="space-y-3">
                   <button
-                    onClick={handleHire}
-                    disabled={hiring}
+                    onClick={handleStartProject}
+                    disabled={conversing}
                     className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-indigo-500/25 disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {hiring ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Zap className="w-5 h-5" />
-                    )}
-                    {hiring ? "Criando Workroom..." : "Contratar Agora"}
-                  </button>
-
-                  <button
-                    onClick={handleStartChat}
-                    disabled={hiring || conversing}
-                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 border border-white/10 group"
-                  >
                     {conversing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <MessageSquare className={`w-4 h-4 ${conversationId ? 'text-green-400' : ''}`} />
+                      <MessageSquare className="w-5 h-5" />
                     )}
-                    {conversationId ? "Abrir Conversa" : "Iniciar Conversa"}
+                    {conversing ? "Iniciando..." : "Iniciar Projeto / Conversa"}
                   </button>
                 </div>
               )}
