@@ -3,6 +3,7 @@
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected, metaMask, walletConnect } from "wagmi/connectors";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ConnectWallet() {
   const { address, isConnected } = useAccount();
@@ -10,6 +11,7 @@ export default function ConnectWallet() {
   const { disconnect } = useDisconnect();
   const [showOptions, setShowOptions] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   // Solução para Hydration Mismatch
   useEffect(() => {
@@ -27,7 +29,10 @@ export default function ConnectWallet() {
           🔗 {address.slice(0, 6)}...{address.slice(-4)}
         </div>
         <button
-          onClick={() => disconnect()}
+          onClick={() => {
+            disconnect();
+            router.push('/');
+          }}
           className="text-red-500 text-sm font-medium hover:underline"
         >
           Desconectar

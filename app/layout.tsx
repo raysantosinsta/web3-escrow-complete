@@ -29,14 +29,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} dark`}>
       <body className="min-h-screen bg-slate-950 flex flex-col">
-        <AuthProvider>
-          <Providers>
+        <Providers>
+          <AuthProvider>
             <Header />
             <main className="flex-1 w-full overflow-y-auto">
               {children}
             </main>
-          </Providers>
-        </AuthProvider>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

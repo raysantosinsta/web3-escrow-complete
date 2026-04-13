@@ -35,7 +35,7 @@ function InboxContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeId = searchParams.get("c");
-  const { user, socket, switchRole } = useAuth();
+  const { user, socket, switchRole, clearChatNotifications } = useAuth();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -135,6 +135,10 @@ function InboxContent() {
     };
 
     fetchMessages();
+    
+    if (activeId) {
+      clearChatNotifications('conversation', activeId);
+    }
   }, [activeId]);
 
   // 4. Scroll automático

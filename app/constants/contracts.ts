@@ -6,6 +6,7 @@ export const ESCROW_ABI = [
   {
     "inputs": [
       { "internalType": "address", "name": "seller", "type": "address" },
+      { "internalType": "address", "name": "buyer", "type": "address" },
       { "internalType": "bool", "name": "isEscrow", "type": "bool" }
     ],
     "name": "pay",

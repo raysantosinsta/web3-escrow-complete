@@ -53,6 +53,7 @@ export default function MerchantSettings() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!merchant) return;
     setSaving(true);
     try {
       const res = await fetch(`http://localhost:3001/api/v1/merchants/${merchant.id}`, {
