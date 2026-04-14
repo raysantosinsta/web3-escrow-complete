@@ -22,8 +22,8 @@ import {
   User,
   Wallet
 } from "lucide-react";
-import { parseEther } from "viem";
-import { useAccount, useBalance, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { parseEther, formatEther } from "viem";
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ESCROW_ABI, ESCROW_ADDRESS } from "../../constants/contracts";
 
 const CONTRACT_ADDRESS = ESCROW_ADDRESS;
@@ -101,6 +101,40 @@ export default function JobWorkroom() {
 
   const { data: clientBalance, refetch: refetchClient } = useBalance({ address: job?.client?.wallet as `0x${string}`, query: { enabled: !!job?.client?.wallet } });
   const { data: freelancerBalance, refetch: refetchFreelancer } = useBalance({ address: job?.freelancer?.wallet as `0x${string}`, query: { enabled: !!job?.freelancer?.wallet } });
+
+  // Lê o valor depositado REAL no contrato escrow (on-chain)
+  const { data: onchainPaymentData } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: [
+      {
+        "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "name": "payments",
+        "outputs": [
+          {"internalType": "address", "name": "buyer", "type": "address"},
+          {"internalType": "address", "name": "seller", "type": "address"},
+          {"internalType": "uint256", "name": "netAmount", "type": "uint256"},
+          {"internalType": "uint256", "name": "feeAmount", "type": "uint256"},
+          {"internalType": "uint8", "name": "status", "type": "uint8"},
+          {"internalType": "uint256", "name": "createdAt", "type": "uint256"},
+          {"internalType": "uint256", "name": "updatedAt", "type": "uint256"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ] as const,
+    functionName: "payments",
+    args: job?.onchainPaymentId !== null && job?.onchainPaymentId !== undefined
+      ? [BigInt(job.onchainPaymentId)]
+      : undefined,
+    query: {
+      enabled: job?.onchainPaymentId !== null && job?.onchainPaymentId !== undefined,
+      refetchInterval: 5000
+    }
+  });
+
+  const lockedAmount = onchainPaymentData?.[2] // índice 2 = netAmount
+    ? Number(formatEther(onchainPaymentData[2] as bigint)).toFixed(4)
+    : null;
 
   useEffect(() => {
     if (id && typeof id === 'string') {
@@ -506,24 +540,63 @@ export default function JobWorkroom() {
                 <ProgressSteps currentStatus={job.status} statusConfig={statusConfig} />
 
                 {/* Amount */}
-                <div className="bg-[#F4F6F8] rounded-xl p-4 border border-slate-200 shadow-sm">
+                <div className="bg-[#F4F6F8] rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-[#666666]">
-                      {job.status === 'negotiating' ? "Valor do Job" : "Saldo em Escrow"}
+                      {job.status === 'negotiating' ? "Valor do Job" : "Valor do Contrato"}
                     </span>
                     <span className="text-2xl font-black text-[#2D2D2D]">{job.price} MATIC</span>
                   </div>
-                  <div className="flex justify-between items-center mt-2 text-xs">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-[#00AEEF]">≈ R$ {(job.price * MATIC_TO_BRL).toFixed(2).replace('.', ',')} BRL</span>
-                    {job.status === 'funded' ? (
-                      <span className="text-[#00C48C] font-black uppercase text-[10px] tracking-widest flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        {user.role === 'client' ? "PAGAMENTO ENVIADO" : "RECEBIDO EM GARANTIA"}
-                      </span>
-                    ) : (
-                      <span className="text-[#666666] font-bold">🟣 Rede Polygon</span>
-                    )}
+                    <span className="text-[#666666] font-bold">🟣 Rede Polygon</span>
                   </div>
+
+                  {/* Valor real bloqueado no contrato — visível para cliente e freelancer */}
+                  {(job.status === 'funded' || job.status === 'reviewing') && (
+                    <div className="border-t border-slate-200 pt-3 mt-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 text-[#00AEEF]" />
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            Bloqueado no Contrato
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          {lockedAmount ? (
+                            <>
+                              <span className="text-lg font-black text-[#0052CC]">{lockedAmount}</span>
+                              <span className="text-[10px] font-bold text-[#00AEEF] uppercase">MATIC</span>
+                            </>
+                          ) : (
+                            <span className="text-xs font-bold text-slate-400">Verificando...</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center gap-1.5 bg-[#00AEEF]/5 border border-[#00AEEF]/20 rounded-lg px-3 py-1.5">
+                        <ShieldCheck className="w-3 h-3 text-[#00AEEF] flex-shrink-0" />
+                        <p className="text-[10px] font-bold text-[#00AEEF]">
+                          {user.role === 'client'
+                            ? 'Seu pagamento está seguro no contrato inteligente'
+                            : 'Seu pagamento está garantido no contrato inteligente'}
+                        </p>
+                      </div>
+                      {job.onchainPaymentId !== null && job.onchainPaymentId !== undefined && (
+                        <p className="text-[10px] text-slate-400 font-mono text-right mt-1">
+                          Escrow ID #{job.onchainPaymentId}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {job.status === 'funded' && (
+                    <div className="flex items-center gap-1 justify-end">
+                      <CheckCircle className="w-3 h-3 text-[#00C48C]" />
+                      <span className="text-[10px] font-black text-[#00C48C] uppercase tracking-widest">
+                        {user.role === 'client' ? 'Pagamento Enviado' : 'Recebido em Garantia'}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
 
