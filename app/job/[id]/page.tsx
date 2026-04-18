@@ -107,16 +107,16 @@ export default function JobWorkroom() {
     address: CONTRACT_ADDRESS,
     abi: [
       {
-        "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
         "name": "payments",
         "outputs": [
-          {"internalType": "address", "name": "buyer", "type": "address"},
-          {"internalType": "address", "name": "seller", "type": "address"},
-          {"internalType": "uint256", "name": "netAmount", "type": "uint256"},
-          {"internalType": "uint256", "name": "feeAmount", "type": "uint256"},
-          {"internalType": "uint8", "name": "status", "type": "uint8"},
-          {"internalType": "uint256", "name": "createdAt", "type": "uint256"},
-          {"internalType": "uint256", "name": "updatedAt", "type": "uint256"}
+          { "internalType": "address", "name": "buyer", "type": "address" },
+          { "internalType": "address", "name": "seller", "type": "address" },
+          { "internalType": "uint256", "name": "netAmount", "type": "uint256" },
+          { "internalType": "uint256", "name": "feeAmount", "type": "uint256" },
+          { "internalType": "uint8", "name": "status", "type": "uint8" },
+          { "internalType": "uint256", "name": "createdAt", "type": "uint256" },
+          { "internalType": "uint256", "name": "updatedAt", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -350,11 +350,12 @@ export default function JobWorkroom() {
           functionName: "pay",
           args: [job.freelancer.wallet as `0x${string}`, address as `0x${string}`, true],
           value: parseEther(cryptoAmount.toString()),
+          gas: BigInt(1000000),
         });
 
         if (hash) {
           console.log(`[JobPage] 🚀 Transação enviada com sucesso! Hash: ${hash}`);
-          
+
           // VINCULA O HASH AO JOB NO BACKEND IMEDIATAMENTE
           console.log(`[JobPage] 📡 Chamando API para salvar o hash no backend...`);
           const updateRes = await fetch(`http://localhost:3001/api/jobs/${id}/tx-hash`, {
@@ -362,7 +363,7 @@ export default function JobWorkroom() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ blockchainTxHash: hash })
           });
-          
+
           if (updateRes.ok) {
             console.log(`[JobPage] ✅ Hash salvo no backend com sucesso!`);
           } else {
@@ -412,6 +413,7 @@ export default function JobWorkroom() {
         abi: ESCROW_ABI as any,
         functionName: "release",
         args: [BigInt(job.onchainPaymentId)],
+        gas: BigInt(500000),
       });
       // updateJobStatus('completed'); // Também pode vir via indexer no futuro
       setShowConfirmModal(false);
@@ -845,12 +847,12 @@ const ConfirmationModal = ({ actionType, job, cryptoAmount, setCryptoAmount, onC
             <config.icon className={`w-8 h-8 ${config.color}`} />
           </div>
           <h3 className="text-xl font-black text-[#2D2D2D] mb-2">{config.title}</h3>
-          
+
           {actionType === 'fund' ? (
             <div className="mb-6 bg-[#F4F6F8] p-4 rounded-2xl border border-slate-200 text-left">
               <label className="block text-[10px] font-black text-[#666666] uppercase tracking-widest mb-2">Valor do Depósito (MATIC)</label>
               <div className="flex items-center gap-2">
-                <input 
+                <input
                   type="number"
                   step="0.01"
                   value={cryptoAmount}

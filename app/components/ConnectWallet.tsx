@@ -1,89 +1,160 @@
-// components/ConnectWallet.tsx (versão com múltiplas wallets)
 "use client";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { injected, metaMask, walletConnect } from "wagmi/connectors";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { injected, metaMask } from "wagmi/connectors";
+import { Loader2, Wallet, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 export default function ConnectWallet() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors, error, isPending } = useConnect();
+  const { connect, connectors, isPending, error } = useConnect();
   const { disconnect } = useDisconnect();
-  const [showOptions, setShowOptions] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const connectAttempted = useRef(false);
 
-  // Solução para Hydration Mismatch
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setIsClient(true);
+    console.log("ConnectWallet - Componente montado");
+    console.log("Connectors disponíveis:", connectors.map(c => c.name));
+    console.log("MetaMask disponível:", typeof window !== "undefined" && !!window.ethereum);
+  }, [connectors]);
 
-  if (!mounted) return null;
+  const handleConnect = async () => {
+    // Evita múltiplas tentativas simultâneas
+    if (isConnecting || isPending || connectAttempted.current) {
+      console.log("⚠️ Conexão já em andamento, aguarde...");
+      return;
+    }
 
-  if (isConnected && address) {
+    console.log("🔵 Botão conectar clicado!");
+    console.log("window.ethereum:", window.ethereum);
 
+    if (typeof window !== "undefined" && !window.ethereum) {
+      console.error("❌ MetaMask não encontrada!");
+      alert("MetaMask não está instalada! Por favor, instale para continuar.");
+      window.open("https://metamask.io/download/", "_blank");
+      return;
+    }
 
+    try {
+      setIsConnecting(true);
+      connectAttempted.current = true;
+
+      console.log("🟡 Tentando conectar com injected...");
+
+      // Limpa qualquer estado pendente anterior
+      if (window.ethereum && window.ethereum.removeAllListeners) {
+        window.ethereum.removeAllListeners('connect');
+        window.ethereum.removeAllListeners('disconnect');
+      }
+
+      // Tenta conectar
+      connect({ connector: injected() });
+
+      // Reseta o flag após 3 segundos (caso não haja resposta)
+      setTimeout(() => {
+        connectAttempted.current = false;
+        setIsConnecting(false);
+      }, 3000);
+
+    } catch (err) {
+      console.error("❌ Erro ao conectar:", err);
+      connectAttempted.current = false;
+      setIsConnecting(false);
+
+      // Fallback para o connector do MetaMask
+      try {
+        console.log("🟡 Tentando fallback com metaMask connector...");
+        const metaMaskConnector = connectors.find(c => c.name === 'MetaMask');
+        if (metaMaskConnector) {
+          connect({ connector: metaMaskConnector });
+        }
+      } catch (err2) {
+        console.error("❌ Erro no fallback:", err2);
+      }
+    }
+  };
+
+  // Mostra loading enquanto verifica o cliente
+  if (!isClient) {
     return (
-      <div className="flex items-center justify-between gap-4">
-        <div className="px-4 py-2 bg-green-100 text-green-700 rounded-2xl text-sm font-medium truncate">
-          🔗 {address.slice(0, 6)}...{address.slice(-4)}
+      <div className="w-full">
+        <div className="bg-gray-200 animate-pulse h-12 rounded-xl"></div>
+      </div>
+    );
+  }
+
+  // Estado conectado
+  if (isConnected && address) {
+    return (
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 bg-[#F4F6F8] px-3 py-2 rounded-xl border border-slate-200">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-sm font-mono text-[#2D2D2D] font-medium">
+            {address.slice(0, 6)}...{address.slice(-4)}
+          </span>
         </div>
         <button
           onClick={() => {
             disconnect();
-            router.push('/');
+            connectAttempted.current = false;
+            setIsConnecting(false);
           }}
-          className="text-red-500 text-sm font-medium hover:underline"
+          className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+          title="Desconectar"
         >
-          Desconectar
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     );
   }
 
-  if (showOptions) {
-    return (
-      <div className="space-y-3">
-        {connectors.map((connector) => (
-          <button
-            key={connector.uid}
-            onClick={() => {
-              connect({ connector });
-              setShowOptions(false);
-            }}
-            disabled={isPending}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-left hover:bg-gray-50 transition"
-          >
-            <div className="font-medium">
-              {connector.name === "MetaMask" && "🦊 "}
-              {connector.name === "WalletConnect" && "💎 "}
-              {connector.name === "Injected" && "🔌 "}
-              {connector.name}
-            </div>
-            <div className="text-xs text-gray-500">
-              {connector.name === "MetaMask" && "Conectar via MetaMask"}
-              {connector.name === "WalletConnect" && "Conectar via WalletConnect"}
-              {connector.name === "Injected" && "Conectar via extensão"}
-            </div>
-          </button>
-        ))}
-        <button
-          onClick={() => setShowOptions(false)}
-          className="w-full text-gray-500 text-sm hover:underline"
-        >
-          Voltar
-        </button>
-      </div>
-    );
-  }
-
+  // Estado desconectado
   return (
-    <button
-      onClick={() => setShowOptions(true)}
-      disabled={isPending}
-      className="w-full bg-black text-white px-6 py-3 rounded-2xl font-medium hover:bg-zinc-800 transition"
-    >
-      🔑 Conectar Wallet
-    </button>
+    <div className="space-y-2">
+      <button
+        onClick={handleConnect}
+        disabled={isPending || isConnecting}
+        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00AEEF] to-[#0052CC] text-white py-3 rounded-xl font-bold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {(isPending || isConnecting) ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Conectando...
+          </>
+        ) : (
+          <>
+            <Wallet className="w-5 h-5" />
+            Conectar MetaMask
+          </>
+        )}
+      </button>
+      {error && (
+        <p className="text-xs text-red-500 text-center mt-2">
+          Erro: {error.message}
+        </p>
+      )}
+      <button
+        onClick={() => {
+          console.log("=== DEBUG INFO ===");
+          console.log("window.ethereum:", window.ethereum);
+          console.log("isConnected:", isConnected);
+          console.log("isPending:", isPending);
+          console.log("isConnecting:", isConnecting);
+          console.log("connectAttempted:", connectAttempted.current);
+          console.log("Connectors:", connectors.map(c => ({ name: c.name, ready: c.ready })));
+        }}
+        className="w-full text-xs text-gray-400 py-1 hover:text-gray-600 transition-colors"
+        type="button"
+      >
+        🔧 Debug
+      </button>
+    </div>
   );
 }

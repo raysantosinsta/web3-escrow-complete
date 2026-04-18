@@ -1,5 +1,5 @@
 // frontend/app/constants/contracts.ts
-export const ESCROW_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3") as `0x${string}`;
+export const ESCROW_ADDRESS = (process.env.NEXT_PUBLIC_ESCROW_ADDRESS || process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x0dcd1bf9a1b36ce34237eeafef220932846bcd82") as `0x${string}`;
 
 export const ESCROW_ABI = [
   {

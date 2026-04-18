@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, Briefcase, ShieldCheck, Wallet } from "lucide-react";
+import { ArrowRightLeft, Briefcase, ShieldCheck, Wallet, Coins, Vote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
 import ConnectWallet from "./ConnectWallet";
@@ -59,6 +59,20 @@ export default function Header() {
           >
             <Briefcase className="w-4 h-4" />
             Dashboard
+          </button>
+          <button
+            onClick={() => router.push("/staking")}
+            className="text-[#666666] hover:text-[#0052CC] font-medium text-sm transition-colors flex items-center gap-2"
+          >
+            <Coins className="w-4 h-4" />
+            Staking
+          </button>
+          <button
+            onClick={() => router.push("/governance")}
+            className="text-[#666666] hover:text-[#0052CC] font-medium text-sm transition-colors flex items-center gap-2"
+          >
+            <Vote className="w-4 h-4" />
+            Governança
           </button>
           <button
             onClick={() => router.push("/dashboard/merchant")}
